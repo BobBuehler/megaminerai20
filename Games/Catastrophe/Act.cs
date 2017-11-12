@@ -198,6 +198,42 @@ namespace Joueur.cs.Games.Catastrophe
             return true;
         }
 
+        public static bool CanHarvest(this Unit unit, Tile target, int maxTurnsToHarvest = 0, bool checkRange = true)
+        {
+            if (unit.Job != AI.GATHERER || !unit.CanAct())
+            {
+                return false;
+            }
+
+            if (target.Structure != null)
+            {
+                if (target.Structure.Type != "shelter" || target.Structure.Owner == unit.Owner)
+                {
+                    return false;
+                }
+            }
+            else if (target.HarvestRate < 1)
+            {
+                return false;
+            }
+            else if (target.TurnsToHarvest > maxTurnsToHarvest)
+            {
+                return false;
+            }
+
+            if (unit.Materials + unit.Food >= unit.Job.CarryLimit)
+            {
+                return false;
+            }
+
+            if (checkRange && !unit.ToPoint().IsInStepRange(target.ToPoint(), 1))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public static bool CanMove(this Unit unit, Tile target = null, bool checkRange = false)
         {
             if (unit.Moves < 1)
@@ -285,6 +321,24 @@ namespace Joueur.cs.Games.Catastrophe
             if (target != null)
             {
                 unit.Deconstruct(target);
+            }
+        }
+
+        public static void Drop(Unit unit, IEnumerable<Tile> targets, string resource, int amount = 0)
+        {
+            var target = targets.FirstOrDefault(t => unit.CanDrop(t, resource));
+            if (target != null)
+            {
+                unit.Drop(target, resource, amount);
+            }
+        }
+
+        public static void Harvest(Unit unit, IEnumerable<Tile> targets)
+        {
+            var target = targets.FirstOrDefault(t => unit.CanHarvest(t));
+            if (target != null)
+            {
+                unit.Harvest(target);
             }
         }
 

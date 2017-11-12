@@ -42,7 +42,7 @@ namespace Joueur.cs.Games.Catastrophe
             {
                 return;
             }
-            var shelters = unit.Owner.Structures.Where(s => s.Type == "shelter");
+            var shelters = AI.GetStructures(unit.Owner, "shelter");
             Act.Move(unit, shelters.SelectMany(s => s.Tile.GetSquareNeighbors()));
             // And
             if (unit.CanRest())
@@ -73,13 +73,6 @@ namespace Joueur.cs.Games.Catastrophe
             Act.Attack(unit, targets);
         }
 
-        public static void MoveAndRestAndDeconstruct(Unit unit, IEnumerable<Tile> targets)
-        {
-            MoveAndRest(unit, unit.GetActionCost());
-            Act.Move(unit, targets.SelectMany(t => t.GetNeighbors()));
-            Act.Deconstruct(unit, targets);
-        }
-
         public static void MoveAndRestAndConstruct(Unit unit, IEnumerable<Tile> targets, string type)
         {
             MoveAndRest(unit, unit.GetActionCost());
@@ -92,6 +85,26 @@ namespace Joueur.cs.Games.Catastrophe
             MoveAndRest(unit, unit.GetActionCost());
             Act.Move(unit, targets.SelectMany(t => t.Tile.GetNeighbors()));
             Act.Convert(unit, targets);
+        }
+
+        public static void MoveAndRestAndDeconstruct(Unit unit, IEnumerable<Tile> targets)
+        {
+            MoveAndRest(unit, unit.GetActionCost());
+            Act.Move(unit, targets.SelectMany(t => t.GetNeighbors()));
+            Act.Deconstruct(unit, targets);
+        }
+
+        public static void MoveAndRestAndDrop(Unit unit, IEnumerable<Tile> targets, string resource)
+        {
+            Act.Move(unit, targets.SelectMany(t => t.GetNeighbors().Concat(t)));
+            Act.Drop(unit, targets, resource);
+        }
+
+        public static void MoveAndRestAndHarvest(Unit unit, IEnumerable<Tile> targets)
+        {
+            MoveAndRest(unit, unit.GetActionCost());
+            Act.Move(unit, targets.SelectMany(t => t.GetNeighbors().Concat(t)));
+            Act.Harvest(unit, targets);
         }
     }
 }

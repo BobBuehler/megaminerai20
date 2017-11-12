@@ -210,6 +210,8 @@ namespace Joueur.cs.Games.Catastrophe
 
             this.BobMissionaries();
             this.BobSoldiers();
+            this.BobBuilders();
+            this.BobGatherers();
 
             GetUnits(AI.US).ForEach(u => Solver.MoveAndRest(u));
         }
@@ -218,14 +220,17 @@ namespace Joueur.cs.Games.Catastrophe
         {
             var desiredCats = new Job[]
             {
+                AI.GATHERER,
                 AI.MISSIONARY,
                 AI.SOLDIER,
+                AI.BUILDER,
                 AI.SOLDIER,
                 AI.MISSIONARY,
                 AI.SOLDIER,
-                AI.SOLDIER,
+                AI.GATHERER,
                 AI.SOLDIER,
                 AI.MISSIONARY,
+                AI.BUILDER,
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
@@ -285,26 +290,44 @@ namespace Joueur.cs.Games.Catastrophe
         {
             GetUnits(AI.US, AI.SOLDIER).ForEach(u =>
             {
-                if ((Act.GetRegenAmount(u) > 0 && u.Energy < 100) || u.Energy < 50)
+                if (Act.GetRegenAmount(u) > 0 && u.Energy < 90)
+                {
+                    u.Rest();
+                }
+                else if (u.Energy < 50)
                 {
                     Solver.MoveAndRest(u);
                 }
+                else
+                {
+                    Solver.MoveAndAttack(u, GetUnits(AI.THEM).Select(e => e.Tile));
+                    if (u.Owner == AI.US) // if not dead
+                    {
+                        Solver.MoveAndAttack(u, GetStructures(AI.THEM).Select(e => e.Tile));
+                    }
+                }
             });
-            GetUnits(AI.US, AI.SOLDIER).ForEach(u => Solver.MoveAndAttack(u, GetUnits(AI.THEM).Select(e => e.Tile)));
-            GetUnits(AI.US, AI.SOLDIER).ForEach(u => Solver.MoveAndAttack(u, GetStructures(AI.THEM).Select(e => e.Tile)));
         }
 
         public void BobBuilders()
         {
-            AI.US.Units.Where(u => u.Job == AI.MISSIONARY).ForEach(u => Solver.MoveAndRestAndConvert(u, AI.GAME.Units.Where(n => u.CanConvert(u, false))));
+            var shelterSites = AI.GAME.Tiles.Where(t => !GetStructures(AI.US, "shelter").Any(s => s.Tile.ToPoint().IsInSquareRange(t.ToPoint(), 2)));
+            GetUnits(AI.US, AI.BUILDER).ForEach(b => Solver.MoveAndRestAndConstruct(b, shelterSites.Where(t => Act.CanConstruct(b, t, "shelter", false)), "shelter"));
+            GetUnits(AI.US, AI.BUILDER).Where(b => b.Materials < AI.STRUCTURE_COSTS["shelter"]).ForEach(u => Solver.MoveAndRestAndDeconstruct(u, AI.GAME.Tiles.Where(t => u.CanDeconstruct(t, false))));
         }
 
-        public IEnumerable<Structure> GetStructures(Player player, string type = null)
+        public void BobGatherers()
         {
-            return AI.GAME.Structures.Where(s => s.Owner == player.Opponent && s.Tile != null && (type == null || s.Type == type));
+            GetUnits(AI.US, AI.GATHERER).ForEach(g => Solver.MoveAndRestAndHarvest(g, AI.GAME.Tiles.Where(t => Act.CanHarvest(g, t, 2, false))));
+            GetUnits(AI.US, AI.GATHERER).Where(g => g.Food > 0).ForEach(u => Solver.MoveAndRestAndDrop(u, GetStructures(AI.US, "shelter").Select(s => s.Tile), AI.FOOD));
         }
 
-        public IEnumerable<Unit> GetUnits(Player player, Job job = null)
+        public static IEnumerable<Structure> GetStructures(Player player, string type = null)
+        {
+            return AI.GAME.Structures.Where(s => s.Owner == player && s.Tile != null && (type == null || s.Type == type));
+        }
+
+        public static IEnumerable<Unit> GetUnits(Player player, Job job = null)
         {
             return AI.GAME.Units.Where(u => u.Owner == player && (job == null || u.Job == job));
         }
