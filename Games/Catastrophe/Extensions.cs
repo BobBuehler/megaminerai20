@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Joueur.cs.Games.Catastrophe
 {
@@ -101,6 +102,11 @@ namespace Joueur.cs.Games.Catastrophe
         public static IEnumerable<T> Concat<T>(this IEnumerable<T> source, params T[] rest)
         {
             return source.Concat(rest);
+        }
+
+        public static IEnumerable<Tile> GetSquareNeighbors(this Tile tile)
+        {
+            return tile.ToPoint().GetSquareNeighbors().Select(p => p.ToTile());
         }
     }
 }
