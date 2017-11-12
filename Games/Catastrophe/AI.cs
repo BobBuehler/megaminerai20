@@ -285,13 +285,13 @@ namespace Joueur.cs.Games.Catastrophe
         {
             GetUnits(AI.US, AI.SOLDIER).ForEach(u =>
             {
-                if ((100 - u.Energy) > Act.GetRegenAmount(u) || u.Energy < 50)
+                if ((Act.GetRegenAmount(u) > 0 && u.Energy < 100) || u.Energy < 50)
                 {
                     Solver.MoveAndRest(u);
                 }
             });
-            GetUnits(AI.US, AI.SOLDIER).ForEach(u => Solver.MoveAndRestAndAttack(u, GetUnits(AI.THEM).Select(e => e.Tile)));
-            GetUnits(AI.US, AI.SOLDIER).ForEach(u => Solver.MoveAndRestAndAttack(u, GetStructures(AI.THEM).Select(e => e.Tile)));
+            GetUnits(AI.US, AI.SOLDIER).ForEach(u => Solver.MoveAndAttack(u, GetUnits(AI.THEM).Select(e => e.Tile)));
+            GetUnits(AI.US, AI.SOLDIER).ForEach(u => Solver.MoveAndAttack(u, GetStructures(AI.THEM).Select(e => e.Tile)));
         }
 
         public void BobBuilders()
@@ -301,7 +301,7 @@ namespace Joueur.cs.Games.Catastrophe
 
         public IEnumerable<Structure> GetStructures(Player player, string type = null)
         {
-            return AI.GAME.Structures.Where(s => s.Tile != null && (type == null || s.Type == type));
+            return AI.GAME.Structures.Where(s => s.Owner == player.Opponent && s.Tile != null && (type == null || s.Type == type));
         }
 
         public IEnumerable<Unit> GetUnits(Player player, Job job = null)

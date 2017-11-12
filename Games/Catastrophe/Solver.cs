@@ -64,6 +64,11 @@ namespace Joueur.cs.Games.Catastrophe
         public static void MoveAndRestAndAttack(Unit unit, IEnumerable<Tile> targets)
         {
             MoveAndRest(unit, unit.GetActionCost());
+            MoveAndAttack(unit, targets);
+        }
+
+        public static void MoveAndAttack(Unit unit, IEnumerable<Tile> targets)
+        {
             Act.Move(unit, targets.SelectMany(t => t.GetNeighbors()));
             Act.Attack(unit, targets);
         }
