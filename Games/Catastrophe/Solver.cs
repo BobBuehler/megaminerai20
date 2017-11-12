@@ -78,8 +78,15 @@ namespace Joueur.cs.Games.Catastrophe
         public static void MoveAndRestAndConstruct(Unit unit, IEnumerable<Tile> targets, string type)
         {
             MoveAndRest(unit, unit.GetActionCost());
-            Act.Move(unit, targets.SelectMany(t => t.GetNeighbors().Concat(new[] { t })));
+            Act.Move(unit, targets.SelectMany(t => t.GetNeighbors().Concat(t)));
             Act.Construct(unit, targets, type);
+        }
+
+        public static void MoveAndRestAndConvert(Unit unit, IEnumerable<Unit> targets)
+        {
+            MoveAndRest(unit, unit.GetActionCost());
+            Act.Move(unit, targets.SelectMany(t => t.Tile.GetNeighbors()));
+            Act.Convert(unit, targets);
         }
     }
 }

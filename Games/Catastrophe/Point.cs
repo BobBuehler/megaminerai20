@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Joueur.cs.Games.Catastrophe
 {
@@ -51,6 +53,27 @@ namespace Joueur.cs.Games.Catastrophe
         public static Unit ToUnit(this Point point)
         {
             return AI.GAME.Tiles[point.x + point.y * AI.GAME.MapWidth].Unit;
+        }
+
+        public static bool IsOnBoard(this Point point)
+        {
+            return point.x >= 0 && point.y >= 0 && point.x < AI.GAME.MapWidth && point.y < AI.GAME.MapHeight;
+        }
+
+        public static IEnumerable<Point> GetSquareNeighbors(this Point point)
+        {
+            var points = new[]
+            {
+                new Point(point.x - 1, point.y - 1),
+                new Point(point.x - 1, point.y),
+                new Point(point.x - 1, point.y + 1),
+                new Point(point.x, point.y - 1),
+                new Point(point.x, point.y - 1),
+                new Point(point.x + 1, point.y - 1),
+                new Point(point.x + 1, point.y),
+                new Point(point.x + 1, point.y + 1),
+            };
+            return points.Where(p => p.IsOnBoard());
         }
     }
 }

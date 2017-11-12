@@ -97,5 +97,10 @@ namespace Joueur.cs.Games.Catastrophe
         {
             return Math.Abs(point.x - other.x) + Math.Abs(point.y - other.y);
         }
+
+        public static IEnumerable<T> Concat<T>(this IEnumerable<T> source, params T[] rest)
+        {
+            return source.Concat(rest);
+        }
     }
 }
