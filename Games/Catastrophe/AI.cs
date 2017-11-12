@@ -406,7 +406,7 @@ namespace Joueur.cs.Games.Catastrophe
         public Unit ChoosePrimeThreat()
         {
             var closest = GetUnits(AI.THEM).MinByValue(t => t.ToPoint().ManhattanDistance(AI.US.Cat.ToPoint()));
-            if (GetUnits(AI.US, AI.SOLDIER).Count() < 3 && !closest.ToPoint().IsInStepRange(AI.US.Cat.ToPoint(), 12))
+            if (GetUnits(AI.US, AI.SOLDIER).Count() < 3 && !closest.ToPoint().IsInStepRange(AI.US.Cat.ToPoint(), 18))
             {
                 return null;
             }
