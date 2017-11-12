@@ -9,11 +9,34 @@ namespace Joueur.cs.Games.Catastrophe
     {
         public static double GetActionCost(this Unit unit)
         {
-            if (unit.Owner.Structures.Any(s => s.Type == "monument" && s.Tile.ToPoint().IsInSquareRange(unit.ToPoint(), s.EffectRadius)))
+            var monuments = unit.Owner.Structures.Where(s => s.Tile != null && s.Type == "monument");
+
+            if (monuments.Any(s => s.Tile.ToPoint().IsInSquareRange(unit.ToPoint(), s.EffectRadius)))
             {
                 return AI.GAME.MonumentCostMult * unit.Job.ActionCost;
             }
             return unit.Job.ActionCost;
+        }
+
+        public static double GetRegenAmount(this Unit unit)
+        {
+            var nearbyShelter = unit.Owner.Structures.Where(s => s.Tile != null && s.Type == "shelter" && s.Tile.ToPoint().IsInSquareRange(unit.ToPoint(), s.EffectRadius));
+            if (!nearbyShelter.Any())
+            {
+                return 0;
+            }
+
+            var catShelter = nearbyShelter.Where(s => s.Tile.ToPoint().IsInSquareRange(unit.Owner.Cat.ToPoint(), s.EffectRadius));
+            var mult = 1.0d;
+            if (unit.Starving)
+            {
+                mult *= .5;
+            }
+            if (catShelter.Any())
+            {
+                mult *= 2;
+            }
+            return unit.Job.RegenRate * mult;
         }
 
         public static bool HasEnergyToAct(this Unit unit)
@@ -83,7 +106,7 @@ namespace Joueur.cs.Games.Catastrophe
                 return false;
             }
 
-            if (unit.Materials + target.Materials < AI.STRUCTURE_COSTS[type])
+            if ((unit.Materials + target.Materials) < AI.STRUCTURE_COSTS[type])
             {
                 return false;
             }
@@ -103,7 +126,7 @@ namespace Joueur.cs.Games.Catastrophe
                 return false;
             }
 
-            if (target.Owner == unit.Owner)
+            if (target.Owner != null)
             {
                 return false;
             }

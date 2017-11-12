@@ -142,7 +142,7 @@ namespace Joueur.cs.Games.Catastrophe
             // Put your game logic here for runTurn
             
             Console.WriteLine($"TURN #{this.Game.CurrentTurn}");
-            this.Uproot();
+            this.BobStrat();
 
             return true;
             // <<-- /Creer-Merge: runTurn -->>
@@ -206,7 +206,9 @@ namespace Joueur.cs.Games.Catastrophe
 
         public void BobStrat()
         {
-
+            this.BobJobs();
+            this.BobMissionaries();
+            this.BobSoldiers();
         }
 
         public void BobJobs()
@@ -215,19 +217,83 @@ namespace Joueur.cs.Games.Catastrophe
             {
                 AI.MISSIONARY,
                 AI.SOLDIER,
-                AI.BUILDER,
-                AI.MISSIONARY,
-                AI.SOLDIER,
-                AI.GATHERER,
                 AI.SOLDIER,
                 AI.MISSIONARY,
+                AI.SOLDIER,
+                AI.SOLDIER,
+                AI.SOLDIER,
+                AI.MISSIONARY,
+                AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
+                AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
+                AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
+                AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER
             };
 
-            var haveCats = AI.US.Units.Select(c => c.Job).ToList();
-
-            var unmatchedWants = new List<int>();
+            var haveCats = AI.US.Units.Where(c => c != this.Player.Cat).ToList();
+            var slottedCats = new List<Unit>();
+            foreach (var d in desiredCats)
+            {
+                var index = haveCats.FindIndex(u => u.Job == d);
+                if (index != -1)
+                {
+                    slottedCats.Add(haveCats[index]);
+                    haveCats.RemoveAt(index);
+                }
+                else
+                {
+                    slottedCats.Add(null);
+                }
+            }
+            slottedCats.AddRange(haveCats);
+            for (int i = 0; i < slottedCats.Count; ++i)
+            {
+                if (slottedCats[i] == null)
+                {
+                    var takeIndex = slottedCats.FindLastIndex(u => u != null);
+                    if (takeIndex > i)
+                    {
+                        slottedCats[i] = slottedCats[takeIndex];
+                        slottedCats.RemoveAt(takeIndex);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
             
+            for (int i = 0; i < slottedCats.Count; ++i)
+            {
+                var c = slottedCats[i];
+                if (c != null && c.Job != desiredCats[i])
+                {
+                    Solver.MoveAndRestAndChangeJob(c, desiredCats[i]);
+                }
+            }
+        }
+
+        public void BobMissionaries()
+        {
+            AI.US.Units.Where(u => u.Job == AI.MISSIONARY).ForEach(u => Solver.MoveAndRestAndConvert(u, AI.GAME.Units.Where(n => u.CanConvert(n, false))));
+        }
+
+        public void BobSoldiers()
+        {
+            AI.US.Units.Where(u => u.Job == AI.SOLDIER).ForEach(u =>
+            {
+                if ((100 - u.Energy) > Act.GetRegenAmount(u) || u.Energy < 50)
+                {
+                    Solver.MoveAndRest(u);
+                }
+                Solver.MoveAndRestAndAttack(u, AI.THEM.Units.Select(e => e.Tile));
+                Solver.MoveAndRestAndAttack(u, AI.THEM.Structures.Select(e => e.Tile));
+            });
+        }
+
+        public void BobBuilders()
+        {
+            AI.US.Units.Where(u => u.Job == AI.MISSIONARY).ForEach(u => Solver.MoveAndRestAndConvert(u, AI.GAME.Units.Where(n => u.CanConvert(u, false))));
         }
 
         // <<-- Creer-Merge: methods -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
