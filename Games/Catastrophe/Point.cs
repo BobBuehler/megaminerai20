@@ -68,7 +68,7 @@ namespace Joueur.cs.Games.Catastrophe
                 new Point(point.x - 1, point.y),
                 new Point(point.x - 1, point.y + 1),
                 new Point(point.x, point.y - 1),
-                new Point(point.x, point.y - 1),
+                new Point(point.x, point.y + 1),
                 new Point(point.x + 1, point.y - 1),
                 new Point(point.x + 1, point.y),
                 new Point(point.x + 1, point.y + 1),
