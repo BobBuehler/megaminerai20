@@ -301,7 +301,7 @@ namespace Joueur.cs.Games.Catastrophe
 
         public IEnumerable<Structure> GetStructures(Player player, string type = null)
         {
-            return AI.GAME.Structures.Where(s => s.Owner == player && (type == null || s.Type == type));
+            return AI.GAME.Structures.Where(s => s.Tile != null && (type == null || s.Type == type));
         }
 
         public IEnumerable<Unit> GetUnits(Player player, Job job = null)
