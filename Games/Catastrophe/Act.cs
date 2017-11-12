@@ -7,7 +7,6 @@ namespace Joueur.cs.Games.Catastrophe
 {
     public static class Act
     {
-
         public static double GetActionCost(this Unit unit)
         {
             if (unit.Owner.Structures.Any(s => s.Type == "monument" && s.Tile.ToPoint().IsInSquareRange(unit.ToPoint(), s.EffectRadius)))
@@ -245,6 +244,15 @@ namespace Joueur.cs.Games.Catastrophe
             {
                 unit.Drop(target, AI.MATERIAL, AI.STRUCTURE_COSTS[type] - target.Materials);
                 unit.Construct(target, type);
+            }
+        }
+
+        public static void Convert(Unit unit, IEnumerable<Unit> targets)
+        {
+            var target = targets.FirstOrDefault(t => unit.CanConvert(t));
+            if (target != null)
+            {
+                unit.Convert(target.Tile);
             }
         }
 
