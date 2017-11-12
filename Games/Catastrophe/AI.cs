@@ -207,8 +207,11 @@ namespace Joueur.cs.Games.Catastrophe
         public void BobStrat()
         {
             this.BobJobs();
+
             this.BobMissionaries();
             this.BobSoldiers();
+
+            GetUnits(AI.US).ForEach(u => Solver.MoveAndRest(u));
         }
 
         public void BobJobs()
@@ -230,7 +233,7 @@ namespace Joueur.cs.Games.Catastrophe
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER
             };
 
-            var haveCats = AI.US.Units.Where(c => c != this.Player.Cat).ToList();
+            var haveCats = GetUnits(AI.US).Where(c => c != this.Player.Cat).ToList();
             var slottedCats = new List<Unit>();
             foreach (var d in desiredCats)
             {
@@ -275,25 +278,35 @@ namespace Joueur.cs.Games.Catastrophe
 
         public void BobMissionaries()
         {
-            AI.US.Units.Where(u => u.Job == AI.MISSIONARY).ForEach(u => Solver.MoveAndRestAndConvert(u, AI.GAME.Units.Where(n => u.CanConvert(n, false))));
+            GetUnits(AI.US, AI.MISSIONARY).ForEach(u => Solver.MoveAndRestAndConvert(u, AI.GAME.Units.Where(n => u.CanConvert(n, false))));
         }
 
         public void BobSoldiers()
         {
-            AI.US.Units.Where(u => u.Job == AI.SOLDIER).ForEach(u =>
+            GetUnits(AI.US, AI.SOLDIER).ForEach(u =>
             {
                 if ((100 - u.Energy) > Act.GetRegenAmount(u) || u.Energy < 50)
                 {
                     Solver.MoveAndRest(u);
                 }
             });
-            AI.US.Units.Where(u => u.Job == AI.SOLDIER).ForEach(u => Solver.MoveAndRestAndAttack(u, AI.THEM.Units.Select(e => e.Tile)));
-            AI.US.Units.Where(u => u.Job == AI.SOLDIER).ForEach(u => Solver.MoveAndRestAndAttack(u, AI.THEM.Structures.Select(e => e.Tile)));
+            GetUnits(AI.US, AI.SOLDIER).ForEach(u => Solver.MoveAndRestAndAttack(u, GetUnits(AI.THEM).Select(e => e.Tile)));
+            GetUnits(AI.US, AI.SOLDIER).ForEach(u => Solver.MoveAndRestAndAttack(u, GetStructures(AI.THEM).Select(e => e.Tile)));
         }
 
         public void BobBuilders()
         {
             AI.US.Units.Where(u => u.Job == AI.MISSIONARY).ForEach(u => Solver.MoveAndRestAndConvert(u, AI.GAME.Units.Where(n => u.CanConvert(u, false))));
+        }
+
+        public IEnumerable<Structure> GetStructures(Player player, string type = null)
+        {
+            return AI.GAME.Structures.Where(s => s.Owner == player && (type == null || s.Type == type));
+        }
+
+        public IEnumerable<Unit> GetUnits(Player player, Job job = null)
+        {
+            return AI.GAME.Units.Where(u => u.Owner == player && (job == null || u.Job == job));
         }
 
         // <<-- Creer-Merge: methods -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
