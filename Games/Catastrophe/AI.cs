@@ -231,8 +231,8 @@ namespace Joueur.cs.Games.Catastrophe
                 AI.GATHERER,
                 AI.SOLDIER,
                 AI.BUILDER,
-                AI.SOLDIER,
                 AI.MISSIONARY,
+                AI.SOLDIER,
                 AI.SOLDIER,
                 AI.SOLDIER,
                 AI.MISSIONARY,
@@ -296,8 +296,19 @@ namespace Joueur.cs.Games.Catastrophe
 
         public void BobMissionaries()
         {
-            // var first = Solver.GetNearestPair(GetUnits(AI.US, AI.MISSIONARY), g => AI.SPAWN_POINTS.Any(s => g.IsInStepRange(s, AI.MISSIONARY.Moves + 1)));
             GetUnits(AI.US, AI.MISSIONARY).ForEach(u => Solver.MoveAndRestAndConvert(u, AI.GAME.Units.Where(n => u.CanConvert(n, false))));
+            var first = Solver.GetNearestPair(GetUnits(AI.US, AI.MISSIONARY), g => AI.SPAWN_POINTS.Contains(g));
+            if (first != null)
+            {
+                Act.Move(first.Item1, g => g.ToPoint().IsInStepRange(first.Item2, AI.MISSIONARY.Moves));
+
+                var otherPoint = AI.SPAWN_POINTS.First(p => !p.Equals(first.Item2));
+                var second = Solver.GetNearestPair(GetUnits(AI.US, AI.MISSIONARY).Where(m => m != first.Item1), g => g.Equals(otherPoint));
+                if (second != null)
+                {
+                    Act.Move(second.Item1, g => g.ToPoint().IsInStepRange(second.Item2, AI.MISSIONARY.Moves));
+                }
+            }
         }
 
         public void BobSoldiers()
