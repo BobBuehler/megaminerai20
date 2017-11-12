@@ -144,12 +144,16 @@ namespace Joueur.cs.Games.Catastrophe
         {
             // <<-- Creer-Merge: runTurn -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
             // Put your game logic here for runTurn
-            
-            Console.WriteLine($"TURN #{this.Game.CurrentTurn}");
-            this.BobStrat();
 
-            Console.WriteLine(String.Join("", GetUnits(AI.US).Select(u => u.Job.Title[0]).OrderBy(c => c)));
-            Console.WriteLine(String.Join("", GetUnits(AI.THEM).Select(u => u.Job.Title[0]).OrderBy(c => c)));
+            try
+            {
+                Console.WriteLine($"TURN #{this.Game.CurrentTurn}");
+                this.BobStrat();
+
+                Console.WriteLine(String.Join("", GetUnits(AI.US).Select(u => u.Job.Title[0]).OrderBy(c => c)));
+                Console.WriteLine(String.Join("", GetUnits(AI.THEM).Select(u => u.Job.Title[0]).OrderBy(c => c)));
+            }
+            catch { }
 
             return true;
             // <<-- /Creer-Merge: runTurn -->>
