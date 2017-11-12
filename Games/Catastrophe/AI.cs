@@ -342,7 +342,17 @@ namespace Joueur.cs.Games.Catastrophe
         {
             // TODO: Needs better targets. Maybe put it closer to opposite sides.
             var shelterSites = AI.GAME.Tiles.Where(t => !t.GetNeighbors().Any(n => n.Structure != null && n.Structure.Type == "shelter") && t.GetNeighbors().Any(n => n.Structure != null && n.Structure.Type == "road"));
-            GetUnits(AI.US, AI.BUILDER).ForEach(b => Solver.MoveAndRestAndConstruct(b, shelterSites.Where(t => Act.CanConstruct(b, t, "shelter", false)), "shelter"));
+
+            // any tile along road, that is 2 distance away from other shelter site
+            var shelterSitesV2 = AI.GAME.Tiles.Where(t =>
+                // All structureless tiles along road
+                t.GetNeighbors().Any(n => n.Structure != null && n.Structure.Type == "road")
+                &&
+                // Within 2 distance of a shelter
+                !AI.GetStructures(AI.US, "shelter").Any(s => s.Tile.ToPoint().IsInSquareRange(t.ToPoint(), 2))
+            );
+
+            GetUnits(AI.US, AI.BUILDER).ForEach(b => Solver.MoveAndRestAndConstruct(b, shelterSitesV2.Where(t => Act.CanConstruct(b, t, "shelter", false)), "shelter"));
             GetUnits(AI.US, AI.BUILDER).Where(b => b.Materials < AI.STRUCTURE_COSTS["shelter"]).ForEach(u => Solver.MoveAndRestAndDeconstruct(u, AI.GAME.Tiles.Where(t => u.CanDeconstruct(t, false))));
         }
 
