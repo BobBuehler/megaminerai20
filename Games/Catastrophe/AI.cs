@@ -362,7 +362,10 @@ namespace Joueur.cs.Games.Catastrophe
                 else
                 {
                     var primeThreat = ChoosePrimeThreat();
-                    Solver.MoveAndAttack(u, new[] { primeThreat.Tile });
+                    if (primeThreat != null)
+                    {
+                        Solver.MoveAndAttack(u, new[] { primeThreat.Tile });
+                    }
                 }
             });
         }
@@ -393,7 +396,12 @@ namespace Joueur.cs.Games.Catastrophe
 
         public Unit ChoosePrimeThreat()
         {
-            return GetUnits(AI.THEM).MinByValue(t => t.ToPoint().ManhattanDistance(AI.US.Cat.ToPoint()));
+            var closest = GetUnits(AI.THEM).MinByValue(t => t.ToPoint().ManhattanDistance(AI.US.Cat.ToPoint()));
+            if (!closest.ToPoint().IsInStepRange(AI.US.Cat.ToPoint(), 18))
+            {
+                return null;
+            }
+            return closest;
         }
 
         public static IEnumerable<Structure> GetStructures(Player player, string type = null)
