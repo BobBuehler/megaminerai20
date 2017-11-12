@@ -204,6 +204,29 @@ namespace Joueur.cs.Games.Catastrophe
             AI.US.Units.Where(u => u.Job == AI.SOLDIER).ForEach(s => Solver.MoveAndRestAndAttack(s, AI.THEM.Units.Select(u => u.Tile)));
         }
 
+        public void BobStrat()
+        {
+
+        }
+
+        public void BobJobs()
+        {
+            var desiredCats = new Job[]
+            {
+                AI.MISSIONARY,
+                AI.SOLDIER,
+                AI.BUILDER,
+                AI.MISSIONARY,
+                AI.SOLDIER,
+                AI.GATHERER,
+                AI.SOLDIER,
+                AI.MISSIONARY,
+                AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER
+            };
+
+            var unmatchedWants = new List<int>();
+        }
+
         // <<-- Creer-Merge: methods -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
         // you can add additional methods here for your AI to call
 

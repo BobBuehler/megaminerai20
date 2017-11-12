@@ -43,7 +43,7 @@ namespace Joueur.cs.Games.Catastrophe
                 return;
             }
             var shelters = unit.Owner.Structures.Where(s => s.Type == "shelter");
-            Act.Move(unit, shelters.SelectMany(s => s.Tile.GetNeighbors()));
+            Act.Move(unit, shelters.SelectMany(s => s.Tile.GetSquareNeighbors()));
             // And
             if (unit.CanRest())
             {
@@ -54,7 +54,7 @@ namespace Joueur.cs.Games.Catastrophe
         public static void MoveAndRestAndChangeJob(Unit unit, Job job)
         {
             MoveAndRest(unit, 100);
-            Act.Move(unit, unit.Owner.Cat.Tile.GetNeighbors());
+            Act.Move(unit, unit.Owner.Cat.Tile.GetSquareNeighbors());
             if (unit.CanChangeJob(job))
             {
                 unit.ChangeJob(job.Title);

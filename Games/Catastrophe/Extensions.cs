@@ -101,7 +101,14 @@ namespace Joueur.cs.Games.Catastrophe
 
         public static IEnumerable<T> Concat<T>(this IEnumerable<T> source, params T[] rest)
         {
-            return source.Concat(rest);
+            foreach (var i in source)
+            {
+                yield return i;
+            }
+            foreach (var i in rest)
+            {
+                yield return i;
+            }
         }
 
         public static IEnumerable<Tile> GetSquareNeighbors(this Tile tile)
