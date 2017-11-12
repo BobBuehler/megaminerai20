@@ -31,9 +31,14 @@ namespace Joueur.cs.Games.Catastrophe
             return (int)Math.Ceiling((search.Path.Count() - 2) / (double)unit.Job.Moves);
         }
 
-        public static Unit GetNearest(IEnumerable<Unit> units, Func<Point, bool> isGoal)
+        public static Tuple<Unit, Point> GetNearestPair(IEnumerable<Unit> units, Func<Point, bool> isGoal)
         {
-            return units.MinByValue(u => GetTurnCountToMove(u, isGoal));
+            var path = GetPath(units.Select(u => u.ToPoint()), isGoal);
+            if (path.Count() == 0)
+            {
+                return null;
+            }
+            return Tuple.Create(path.First().ToUnit(), path.Last());
         }
 
         public static void MoveAndRest(Unit unit, double neededEnergy = 100)

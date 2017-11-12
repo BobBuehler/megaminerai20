@@ -144,6 +144,9 @@ namespace Joueur.cs.Games.Catastrophe
             Console.WriteLine($"TURN #{this.Game.CurrentTurn}");
             this.BobStrat();
 
+            Console.WriteLine(String.Join("", GetUnits(AI.US).Select(u => u.Job.Title[0]).OrderBy(c => c)));
+            Console.WriteLine(String.Join("", GetUnits(AI.THEM).Select(u => u.Job.Title[0]).OrderBy(c => c)));
+
             return true;
             // <<-- /Creer-Merge: runTurn -->>
         }
@@ -218,7 +221,7 @@ namespace Joueur.cs.Games.Catastrophe
 
         public void BobJobs()
         {
-            var desiredCats = new Job[]
+            var desiredCats = new List<Job>
             {
                 AI.MISSIONARY,
                 AI.GATHERER,
@@ -236,6 +239,13 @@ namespace Joueur.cs.Games.Catastrophe
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER
             };
+
+            if (GetUnits(AI.THEM, AI.SOLDIER).Count(s => s.ToPoint().IsInStepRange(AI.US.Cat.ToPoint(), 12)) > 1)
+            {
+                Console.WriteLine("MILITARIZE");
+                desiredCats.Insert(0, AI.SOLDIER);
+                desiredCats.Insert(0, AI.SOLDIER);
+            }
 
             var haveCats = GetUnits(AI.US).Where(c => c != this.Player.Cat).ToList();
             var slottedCats = new List<Unit>();
@@ -287,7 +297,21 @@ namespace Joueur.cs.Games.Catastrophe
 
         public void BobSoldiers()
         {
-            // TODO: Better defend Cat
+            if (GetUnits(AI.THEM, AI.SOLDIER).Count(s => s.ToPoint().IsInStepRange(AI.US.Cat.ToPoint(), 8)) > 1)
+            {
+                Console.WriteLine("DEFEND");
+                var first = Solver.GetNearestPair(GetUnits(AI.US, AI.SOLDIER), g => g.IsInStepRange(AI.US.Cat.ToPoint(), 1));
+                if (first != null)
+                {
+                    Act.Move(first.Item1, AI.US.Cat.Tile.GetNeighbors());
+                    var second = Solver.GetNearestPair(GetUnits(AI.US, AI.SOLDIER).Where(s => s != first.Item1), g => g.IsInStepRange(AI.US.Cat.ToPoint(), 1));
+                    if (second != null)
+                    {
+                        Act.Move(second.Item1, AI.US.Cat.Tile.GetNeighbors());
+                    }
+                }
+            }
+
             GetUnits(AI.US, AI.SOLDIER).ForEach(u =>
             {
                 if (Act.GetRegenAmount(u) > 0 && u.Energy < 90)
