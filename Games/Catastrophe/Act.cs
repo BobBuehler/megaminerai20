@@ -207,7 +207,7 @@ namespace Joueur.cs.Games.Catastrophe
                 return false;
             }
 
-            if (!unit.Tile.GetNeighbors().Any(n => n.Structure != null && n.Structure.Owner == unit.Owner && n.Structure.Type == "shelter"))
+            if (!unit.Tile.GetSquareNeighbors().Any(n => n.Structure != null && n.Structure.Owner == unit.Owner && n.Structure.Type == "shelter"))
             {
                 return false;
             }

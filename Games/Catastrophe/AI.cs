@@ -224,7 +224,10 @@ namespace Joueur.cs.Games.Catastrophe
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER
             };
 
+            var haveCats = AI.US.Units.Select(c => c.Job).ToList();
+
             var unmatchedWants = new List<int>();
+            
         }
 
         // <<-- Creer-Merge: methods -->> - Code you add between this comment and the end comment will be preserved between Creer re-runs.
