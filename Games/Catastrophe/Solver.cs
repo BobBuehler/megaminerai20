@@ -56,6 +56,21 @@ namespace Joueur.cs.Games.Catastrophe
             }
         }
 
+        public static void MoveToAndRest(Unit unit, IEnumerable<Point> targets, double neededEnergy = 100)
+        {
+            if (unit.Energy >= neededEnergy)
+            {
+                return;
+            }
+            var shelters = AI.GetStructures(unit.Owner, "shelter");
+            Act.Move(unit, shelters.SelectMany(s => s.Tile.GetSquareNeighbors()));
+            // And
+            if (unit.CanRest())
+            {
+                unit.Rest();
+            }
+        }
+
         public static void MoveAndRestAndChangeJob(Unit unit, Job job)
         {
             MoveAndRest(unit, 100);

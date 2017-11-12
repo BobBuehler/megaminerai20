@@ -51,6 +51,8 @@ namespace Joueur.cs.Games.Catastrophe
         public static string FOOD = "food";
         public static string MATERIAL = "material";
 
+        public static Point[] SPAWN_POINTS;
+
         // <<-- /Creer-Merge: properties -->>
         #endregion
 
@@ -94,12 +96,14 @@ namespace Joueur.cs.Games.Catastrophe
             AI.BUILDABLE_STRUCTURES = new HashSet<string> { "wall", "shelter", "monument" };
             AI.STRUCTURE_COSTS = new Dictionary<string, int>
             {
-                ["wall"] = 75,
-                ["shelter"] = 50,
-                ["monument"] = 150,
-                ["neutral"] = 200,
+                ["wall"] = AI.GAME.WallMaterials,
+                ["shelter"] = AI.GAME.ShelterMaterials,
+                ["monument"] = AI.GAME.MonumentMaterials,
+                ["neutral"] = AI.GAME.NeutralMaterials,
                 ["road"] = 0
             };
+
+            SPAWN_POINTS = new Point[] { new Point(0, (AI.GAME.MapHeight - 1) / 2), new Point(AI.GAME.MapWidth - 1, AI.GAME.MapHeight / 2) };
             // <<-- /Creer-Merge: start -->>
         }
 
@@ -234,8 +238,8 @@ namespace Joueur.cs.Games.Catastrophe
                 AI.GATHERER,
                 AI.SOLDIER,
                 AI.BUILDER,
-                AI.SOLDIER,
                 AI.MISSIONARY,
+                AI.SOLDIER,
                 AI.SOLDIER,
                 AI.SOLDIER,
                 AI.MISSIONARY,
@@ -307,6 +311,18 @@ namespace Joueur.cs.Games.Catastrophe
         public void BobMissionaries()
         {
             GetUnits(AI.US, AI.MISSIONARY).ForEach(u => Solver.MoveAndRestAndConvert(u, AI.GAME.Units.Where(n => u.CanConvert(n, false))));
+            var first = Solver.GetNearestPair(GetUnits(AI.US, AI.MISSIONARY), g => AI.SPAWN_POINTS.Contains(g));
+            if (first != null)
+            {
+                Act.Move(first.Item1, g => g.ToPoint().IsInStepRange(first.Item2, AI.MISSIONARY.Moves));
+
+                var otherPoint = AI.SPAWN_POINTS.First(p => !p.Equals(first.Item2));
+                var second = Solver.GetNearestPair(GetUnits(AI.US, AI.MISSIONARY).Where(m => m != first.Item1), g => g.Equals(otherPoint));
+                if (second != null)
+                {
+                    Act.Move(second.Item1, g => g.ToPoint().IsInStepRange(second.Item2, AI.MISSIONARY.Moves));
+                }
+            }
         }
 
         public void BobSoldiers()
@@ -360,7 +376,17 @@ namespace Joueur.cs.Games.Catastrophe
         {
             // TODO: Needs better targets. Maybe put it closer to opposite sides.
             var shelterSites = AI.GAME.Tiles.Where(t => !t.GetNeighbors().Any(n => n.Structure != null && n.Structure.Type == "shelter") && t.GetNeighbors().Any(n => n.Structure != null && n.Structure.Type == "road"));
-            GetUnits(AI.US, AI.BUILDER).ForEach(b => Solver.MoveAndRestAndConstruct(b, shelterSites.Where(t => Act.CanConstruct(b, t, "shelter", false)), "shelter"));
+
+            // any tile along road, that is 2 distance away from other shelter site
+            var shelterSitesV2 = AI.GAME.Tiles.Where(t =>
+                // All structureless tiles along road
+                t.GetNeighbors().Any(n => n.Structure != null && n.Structure.Type == "road")
+                &&
+                // Within 2 distance of a shelter
+                !AI.GetStructures(AI.US, "shelter").Any(s => s.Tile.ToPoint().IsInSquareRange(t.ToPoint(), 2))
+            );
+
+            GetUnits(AI.US, AI.BUILDER).ForEach(b => Solver.MoveAndRestAndConstruct(b, shelterSitesV2.Where(t => Act.CanConstruct(b, t, "shelter", false)), "shelter"));
             GetUnits(AI.US, AI.BUILDER).Where(b => b.Materials < AI.STRUCTURE_COSTS["shelter"]).ForEach(u => Solver.MoveAndRestAndDeconstruct(u, AI.GAME.Tiles.Where(t => u.CanDeconstruct(t, false))));
         }
 

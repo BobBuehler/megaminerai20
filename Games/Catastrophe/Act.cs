@@ -287,6 +287,18 @@ namespace Joueur.cs.Games.Catastrophe
             }
         }
 
+        public static void Move(Unit unit, Func<Tile, bool> isGoal)
+        {
+            if (unit.CanMove())
+            {
+                var path = Solver.GetPath(new[] { unit.ToPoint() }, p => isGoal(p.ToTile())).ToArray();
+                for (int i = 1; i < path.Length && unit.CanMove(); i++)
+                {
+                    unit.Move(path[i].ToTile());
+                }
+            }
+        }
+
         public static void Attack(Unit unit, IEnumerable<Tile> targets)
         {
             var target = targets.FirstOrDefault(t => unit.CanAttack(t));
