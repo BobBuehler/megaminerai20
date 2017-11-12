@@ -225,7 +225,7 @@ namespace Joueur.cs.Games.Catastrophe
 
         public bool ReadyForBumRush()
         {
-            return GetUnits(AI.THEM, AI.SOLDIER).Count() <= 3 && 2.0*GetUnits(AI.THEM).Count() <= GetUnits(AI.US).Count();
+            return GetUnits(AI.THEM, AI.SOLDIER).Count() <= 3 && 3.0 * GetUnits(AI.THEM).Count() <= GetUnits(AI.US).Count();
         }
 
 
@@ -236,8 +236,8 @@ namespace Joueur.cs.Games.Catastrophe
             {
                 AI.MISSIONARY,
                 AI.GATHERER,
-                AI.SOLDIER,
                 AI.BUILDER,
+                AI.SOLDIER,
                 AI.MISSIONARY,
                 AI.SOLDIER,
                 AI.SOLDIER,
@@ -327,7 +327,7 @@ namespace Joueur.cs.Games.Catastrophe
 
         public void BobSoldiers()
         {
-            if (GetUnits(AI.THEM, AI.SOLDIER).Count(s => s.ToPoint().IsInStepRange(AI.US.Cat.ToPoint(), 8)) > 1)
+            if (GetUnits(AI.THEM, AI.SOLDIER).Count(s => s.ToPoint().IsInStepRange(AI.US.Cat.ToPoint(), 12)) > 1)
             {
                 Console.WriteLine("DEFEND");
                 var first = Solver.GetNearestPair(GetUnits(AI.US, AI.SOLDIER), g => g.IsInStepRange(AI.US.Cat.ToPoint(), 1));
@@ -356,18 +356,13 @@ namespace Joueur.cs.Games.Catastrophe
                 {
                     Console.WriteLine("Ready For Bumb Rushhhh!");
                     Solver.MoveAndAttack(u, new List<Tile> { AI.THEM.Cat.ToPoint().ToTile() });
-                    Solver.MoveAndAttack(u, new List<Tile> { 
-                        GetUnits(AI.THEM).FirstOrDefault().Tile
-                    });
+                    Solver.MoveAndAttack(u, GetUnits(AI.THEM).Select(t => t.Tile));
 
                 }
                 else
                 {
-                    Solver.MoveAndAttack(u, GetUnits(AI.THEM).Select(e => e.Tile));
-                    if (u.Owner == AI.US) // if not dead
-                    {
-                        Solver.MoveAndAttack(u, GetStructures(AI.THEM).Select(e => e.Tile));
-                    }
+                    var primeThreat = ChoosePrimeThreat();
+                    Solver.MoveAndAttack(u, new[] { primeThreat.Tile });
                 }
             });
         }
@@ -394,6 +389,11 @@ namespace Joueur.cs.Games.Catastrophe
         {
             GetUnits(AI.US, AI.GATHERER).ForEach(g => Solver.MoveAndRestAndHarvest(g, AI.GAME.Tiles.Where(t => Act.CanHarvest(g, t, 2, false))));
             GetUnits(AI.US, AI.GATHERER).Where(g => g.Food > 0).ForEach(u => Solver.MoveAndRestAndDrop(u, GetStructures(AI.US, "shelter").Select(s => s.Tile), AI.FOOD));
+        }
+
+        public Unit ChoosePrimeThreat()
+        {
+            return GetUnits(AI.THEM).MinByValue(t => t.ToPoint().ManhattanDistance(AI.US.Cat.ToPoint()));
         }
 
         public static IEnumerable<Structure> GetStructures(Player player, string type = null)
