@@ -51,6 +51,8 @@ namespace Joueur.cs.Games.Catastrophe
         public static string FOOD = "food";
         public static string MATERIAL = "material";
 
+        public static Point[] SPAWN_POINTS;
+
         // <<-- /Creer-Merge: properties -->>
         #endregion
 
@@ -94,12 +96,14 @@ namespace Joueur.cs.Games.Catastrophe
             AI.BUILDABLE_STRUCTURES = new HashSet<string> { "wall", "shelter", "monument" };
             AI.STRUCTURE_COSTS = new Dictionary<string, int>
             {
-                ["wall"] = 75,
-                ["shelter"] = 50,
-                ["monument"] = 150,
-                ["neutral"] = 200,
+                ["wall"] = AI.GAME.WallMaterials,
+                ["shelter"] = AI.GAME.ShelterMaterials,
+                ["monument"] = AI.GAME.MonumentMaterials,
+                ["neutral"] = AI.GAME.NeutralMaterials,
                 ["road"] = 0
             };
+
+            SPAWN_POINTS = new Point[] { new Point(0, (AI.GAME.MapHeight - 1) / 2), new Point(AI.GAME.MapWidth - 1, AI.GAME.MapHeight / 2) };
             // <<-- /Creer-Merge: start -->>
         }
 
@@ -292,6 +296,7 @@ namespace Joueur.cs.Games.Catastrophe
 
         public void BobMissionaries()
         {
+            // var first = Solver.GetNearestPair(GetUnits(AI.US, AI.MISSIONARY), g => AI.SPAWN_POINTS.Any(s => g.IsInStepRange(s, AI.MISSIONARY.Moves + 1)));
             GetUnits(AI.US, AI.MISSIONARY).ForEach(u => Solver.MoveAndRestAndConvert(u, AI.GAME.Units.Where(n => u.CanConvert(n, false))));
         }
 
