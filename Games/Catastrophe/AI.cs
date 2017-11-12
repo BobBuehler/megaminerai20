@@ -241,7 +241,6 @@ namespace Joueur.cs.Games.Catastrophe
                 AI.MISSIONARY,
                 AI.SOLDIER,
                 AI.SOLDIER,
-                AI.SOLDIER,
                 AI.MISSIONARY,
                 AI.GATHERER,
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
@@ -311,6 +310,7 @@ namespace Joueur.cs.Games.Catastrophe
         public void BobMissionaries()
         {
             GetUnits(AI.US, AI.MISSIONARY).ForEach(u => Solver.MoveAndRestAndConvert(u, AI.GAME.Units.Where(n => u.CanConvert(n, false))));
+
             var first = Solver.GetNearestPair(GetUnits(AI.US, AI.MISSIONARY), g => AI.SPAWN_POINTS.Contains(g));
             if (first != null)
             {
@@ -323,6 +323,15 @@ namespace Joueur.cs.Games.Catastrophe
                     Act.Move(second.Item1, g => g.ToPoint().IsInStepRange(second.Item2, AI.MISSIONARY.Moves));
                 }
             }
+
+            var remainder = GetUnits(AI.US, AI.MISSIONARY).FirstOrDefault(m => m.Moves > 0);
+            if (remainder == null)
+            {
+                return;
+            }
+            var brinkOfDeath = AI.GAME.Units.Where(u => u.Owner != null && u.Energy < 50);
+            var smellingDeath = AI.GAME.Tiles.Where(t => brinkOfDeath.Any(b => b.ToPoint().IsInStepRange(t.ToPoint(), AI.MISSIONARY.Moves)));
+            Solver.MoveToAndRest(remainder, smellingDeath.Select(s => s.ToPoint()), 100);
         }
 
         public void BobSoldiers()
@@ -397,7 +406,7 @@ namespace Joueur.cs.Games.Catastrophe
         public Unit ChoosePrimeThreat()
         {
             var closest = GetUnits(AI.THEM).MinByValue(t => t.ToPoint().ManhattanDistance(AI.US.Cat.ToPoint()));
-            if (!closest.ToPoint().IsInStepRange(AI.US.Cat.ToPoint(), 18))
+            if (GetUnits(AI.US, AI.SOLDIER).Count() < 3 && !closest.ToPoint().IsInStepRange(AI.US.Cat.ToPoint(), 12))
             {
                 return null;
             }
