@@ -220,17 +220,16 @@ namespace Joueur.cs.Games.Catastrophe
         {
             var desiredCats = new Job[]
             {
-                AI.GATHERER,
                 AI.MISSIONARY,
+                AI.GATHERER,
                 AI.SOLDIER,
                 AI.BUILDER,
                 AI.SOLDIER,
                 AI.MISSIONARY,
                 AI.SOLDIER,
-                AI.GATHERER,
                 AI.SOLDIER,
                 AI.MISSIONARY,
-                AI.BUILDER,
+                AI.GATHERER,
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
                 AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER, AI.SOLDIER,
@@ -288,6 +287,7 @@ namespace Joueur.cs.Games.Catastrophe
 
         public void BobSoldiers()
         {
+            // TODO: Better defend Cat
             GetUnits(AI.US, AI.SOLDIER).ForEach(u =>
             {
                 if (Act.GetRegenAmount(u) > 0 && u.Energy < 90)
@@ -311,7 +311,8 @@ namespace Joueur.cs.Games.Catastrophe
 
         public void BobBuilders()
         {
-            var shelterSites = AI.GAME.Tiles.Where(t => !GetStructures(AI.US, "shelter").Any(s => s.Tile.ToPoint().IsInSquareRange(t.ToPoint(), 2)));
+            // TODO: Needs better targets. Maybe put it closer to opposite sides.
+            var shelterSites = AI.GAME.Tiles.Where(t => !t.GetNeighbors().Any(n => n.Structure != null && n.Structure.Type == "shelter") && t.GetNeighbors().Any(n => n.Structure != null && n.Structure.Type == "road"));
             GetUnits(AI.US, AI.BUILDER).ForEach(b => Solver.MoveAndRestAndConstruct(b, shelterSites.Where(t => Act.CanConstruct(b, t, "shelter", false)), "shelter"));
             GetUnits(AI.US, AI.BUILDER).Where(b => b.Materials < AI.STRUCTURE_COSTS["shelter"]).ForEach(u => Solver.MoveAndRestAndDeconstruct(u, AI.GAME.Tiles.Where(t => u.CanDeconstruct(t, false))));
         }
