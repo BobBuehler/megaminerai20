@@ -219,8 +219,15 @@ namespace Joueur.cs.Games.Catastrophe
             GetUnits(AI.US).ForEach(u => Solver.MoveAndRest(u));
         }
 
+        public bool ReadyForBumRush()
+        {
+            return GetUnits(AI.THEM, AI.SOLDIER).Count() <= 3 && 2.0*GetUnits(AI.THEM).Count() <= GetUnits(AI.US).Count();
+        }
+
+
         public void BobJobs()
         {
+
             var desiredCats = new List<Job>
             {
                 AI.MISSIONARY,
@@ -246,6 +253,13 @@ namespace Joueur.cs.Games.Catastrophe
                 desiredCats.Insert(0, AI.SOLDIER);
                 desiredCats.Insert(0, AI.SOLDIER);
             }
+            else if (this.ReadyForBumRush())
+            {
+                desiredCats = GetUnits(AI.US).Select(u => AI.SOLDIER).ToList();
+                desiredCats.Insert(0, AI.GATHERER);
+                desiredCats.Insert(0, AI.MISSIONARY);
+            }
+
 
             var haveCats = GetUnits(AI.US).Where(c => c != this.Player.Cat).ToList();
             var slottedCats = new List<Unit>();
@@ -321,6 +335,15 @@ namespace Joueur.cs.Games.Catastrophe
                 else if (u.Energy < 50)
                 {
                     Solver.MoveAndRest(u);
+                }
+                else if (ReadyForBumRush())
+                {
+                    Console.WriteLine("Ready For Bumb Rushhhh!");
+                    Solver.MoveAndAttack(u, new List<Tile> { AI.THEM.Cat.ToPoint().ToTile() });
+                    Solver.MoveAndAttack(u, new List<Tile> { 
+                        GetUnits(AI.THEM).FirstOrDefault().Tile
+                    });
+
                 }
                 else
                 {
