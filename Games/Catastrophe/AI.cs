@@ -286,9 +286,9 @@ namespace Joueur.cs.Games.Catastrophe
                 {
                     Solver.MoveAndRest(u);
                 }
-                Solver.MoveAndRestAndAttack(u, AI.THEM.Units.Select(e => e.Tile));
-                Solver.MoveAndRestAndAttack(u, AI.THEM.Structures.Select(e => e.Tile));
             });
+            AI.US.Units.Where(u => u.Job == AI.SOLDIER).ForEach(u => Solver.MoveAndRestAndAttack(u, AI.THEM.Units.Select(e => e.Tile)));
+            AI.US.Units.Where(u => u.Job == AI.SOLDIER).ForEach(u => Solver.MoveAndRestAndAttack(u, AI.THEM.Structures.Select(e => e.Tile)));
         }
 
         public void BobBuilders()

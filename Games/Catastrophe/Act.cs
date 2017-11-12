@@ -9,19 +9,13 @@ namespace Joueur.cs.Games.Catastrophe
     {
         public static double GetActionCost(this Unit unit)
         {
-            try
+            var monuments = unit.Owner.Structures.Where(s => s.Tile != null && s.Type == "monument");
+
+            if (monuments.Any(s => s.Tile.ToPoint().IsInSquareRange(unit.ToPoint(), s.EffectRadius)))
             {
-
-                var monuments = unit.Owner.Structures.Where(s => s.Tile != null && s.Type == "monument");
-
-                if (monuments.Any(s => s.Tile.ToPoint().IsInSquareRange(unit.ToPoint(), s.EffectRadius)))
-                {
-                    return AI.GAME.MonumentCostMult * unit.Job.ActionCost;
-                }
-                return unit.Job.ActionCost;
+                return AI.GAME.MonumentCostMult * unit.Job.ActionCost;
             }
-            catch { }
-            return 100;
+            return unit.Job.ActionCost;
         }
 
         public static double GetRegenAmount(this Unit unit)
